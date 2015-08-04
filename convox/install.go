@@ -35,12 +35,12 @@ func init() {
 				Usage: "create EC2 instances on dedicated hardware",
 			},
 			cli.IntFlag{
-				Name: "instance-count",
+				Name:  "instance-count",
 				Value: 3,
 				Usage: "number of EC2 instances",
 			},
 			cli.StringFlag{
-				Name: "instance-type",
+				Name:  "instance-type",
 				Value: "t2.small",
 				Usage: "type of EC2 instances",
 			},
@@ -67,7 +67,7 @@ func cmdInstall(c *cli.Context) {
 
 	if c.Bool("dedicated") {
 		tenancy = "dedicated"
-		if strings.HasPrefix(instanceType, "t2")  {
+		if strings.HasPrefix(instanceType, "t2") {
 			stdcli.Error(fmt.Errorf("t2 instance types aren't supported in dedicated tenancy, please set --instance-type."))
 		}
 	}
@@ -147,6 +147,12 @@ func cmdInstall(c *cli.Context) {
 		version = "latest"
 	}
 
+	region := os.Getenv("AWS_REGION")
+
+	if region == "" {
+		region = "us-east-1"
+	}
+
 	instanceCount := fmt.Sprintf("%d", c.Int("instance-count"))
 
 	fmt.Println("Installing Convox...")
@@ -157,7 +163,7 @@ func cmdInstall(c *cli.Context) {
 	password := randomString(30)
 
 	CloudFormation := cloudformation.New(&aws.Config{
-		Region:      "us-east-1",
+		Region:      region,
 		Credentials: credentials.NewStaticCredentials(access, secret, ""),
 	})
 
